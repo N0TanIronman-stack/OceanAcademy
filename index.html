@@ -31,10 +31,10 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 @keyframes starPop{0%{transform:scale(0) rotate(-30deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
 @keyframes bounce{0%,80%,100%{transform:scale(.8);opacity:.5;}40%{transform:scale(1.2);opacity:1;}}
 @keyframes toastIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-@keyframes swim{from{transform:scaleX(-1) translateX(80px);}to{transform:scaleX(-1) translateX(calc(-100vw - 80px));}}
-.fish{position:fixed;pointer-events:none;font-size:1.6rem;z-index:0;opacity:.18;animation:swim 18s linear infinite;}
-.fish:nth-child(2){animation-duration:25s;animation-delay:-8s;top:30%;font-size:1rem;}
-.fish:nth-child(3){animation-duration:20s;animation-delay:-14s;top:60%;font-size:1.2rem;}
+@keyframes swimR{from{transform:translateX(-120px);}to{transform:translateX(calc(100vw + 120px));}}
+@keyframes swimL{from{transform:translateX(calc(100vw + 120px));}to{transform:translateX(-120px);}}
+@keyframes swimRflip{from{transform:scaleX(-1) translateX(120px);}to{transform:scaleX(-1) translateX(calc(-100vw - 120px));}}
+.fish{position:fixed;pointer-events:none;z-index:0;opacity:.15;animation-timing-function:linear;animation-iteration-count:infinite;}
 .login-card{background:white;border-radius:var(--radius-xl);padding:48px 40px;width:100%;max-width:500px;box-shadow:0 32px 64px rgba(0,0,0,.25);text-align:center;animation:slideUp .5s ease;}
 .login-logo{font-family:'Baloo 2',cursive;font-size:2.5rem;font-weight:800;color:var(--ocean-mid);margin-bottom:4px;}
 .login-tagline{color:var(--text-light);font-size:.95rem;margin-bottom:36px;}
@@ -309,6 +309,8 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 .pcb-label{font-size:.75rem;font-weight:800;color:var(--ocean-mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;}
 .pcb-text{font-size:.93rem;color:var(--text-dark);font-weight:600;line-height:1.6;}
 .pcb-author{font-size:.78rem;color:var(--text-light);font-weight:700;margin-top:7px;}
+.quiz-options.img-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.quiz-option.img-opt{padding:8px;text-align:center;}
 .review-date-group{margin-bottom:20px;}
 .review-date-label{font-weight:800;font-size:.88rem;color:var(--ocean-mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding:6px 12px;background:var(--ocean-foam);border-radius:50px;display:inline-block;}
 .review-card-collapsed{background:white;border-radius:var(--radius-lg);padding:12px 18px;box-shadow:var(--shadow-soft);border:2px solid #e9ecef;display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;transition:var(--transition);}
@@ -367,9 +369,18 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 </style>
 </head>
 <body>
-<div class="fish" style="top:20%">🐟</div>
-<div class="fish" style="top:45%">🐠</div>
-<div class="fish" style="top:70%">🦈</div>
+<!-- Fish face right naturally (🐟🐠🐡): swimR = L→R as-is; swimL = R→L with scaleX flip to keep facing direction of travel -->
+<!-- 🦈 faces left naturally, so going R→L needs no flip; going L→R needs flip via swimRflip -->
+<!-- 🐙🦑 are symmetric, direction doesn't matter -->
+<div class="fish" style="top:8%;font-size:1.7rem;animation:swimR 22s linear -4s infinite;">🐟</div>
+<div class="fish" style="top:18%;font-size:1rem;animation:swimL 30s linear -11s infinite;">🐠</div>
+<div class="fish" style="top:28%;font-size:2rem;animation:swimL 18s linear -2s infinite;">🦈</div>
+<div class="fish" style="top:40%;font-size:.85rem;animation:swimR 26s linear -18s infinite;">🐡</div>
+<div class="fish" style="top:52%;font-size:1.4rem;animation:swimR 20s linear -7s infinite;">🐙</div>
+<div class="fish" style="top:63%;font-size:1rem;animation:swimL 35s linear -22s infinite;">🐟</div>
+<div class="fish" style="top:74%;font-size:1.6rem;animation:swimR 24s linear -14s infinite;">🦑</div>
+<div class="fish" style="top:83%;font-size:.9rem;animation:swimRflip 28s linear -3s infinite;">🦈</div>
+<div class="fish" style="top:91%;font-size:1.2rem;animation:swimL 19s linear -9s infinite;">🐡</div>
 <div class="toast hidden" id="toast"></div>
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
@@ -387,7 +398,7 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 <div id="screen-login" class="screen active">
   <div class="login-card">
     <div class="login-logo">🌊 Ocean Academy</div>
-    <div class="login-tagline">Where learning runs deep</div>
+    <div class="login-tagline" id="login-tagline">Where learning runs deep</div>
     <div class="login-title">Who's learning today?</div>
     <div class="login-options">
       <button class="login-option-btn btn-parent" onclick="goParentDashboard()"><span class="icon-lg">👩‍💼</span>Parent Portal</button>
@@ -409,7 +420,7 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
     </div>
     <div class="nav-right">
       <div class="nav-user">
-        <div class="nav-avatar" id="parent-nav-avatar" onclick="openChangeParentAvatar()" title="Change avatar">👩‍💼</div>
+        <div class="nav-avatar" id="parent-nav-avatar" onclick="openChangeParentAvatar()" title="Change avatar"></div>
         <span>Parent Portal</span>
       </div>
       <button class="nav-btn outline" onclick="goLogin()">Logout</button>
@@ -525,12 +536,34 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
       </div>
       <div id="panel-quizbuilder" class="panel">
         <div class="section-title">Quiz Builder ✏️</div>
-        <div class="section-sub">Create a custom quiz for any topic. Once saved, it will show the ✏️ Quiz badge on that topic for all children.</div>
+        <div class="section-sub">Create a custom quiz for any topic. Filter by grade to find topics quickly, or select "Custom" to create a brand-new topic.</div>
         <div class="ai-generator" style="max-width:100%;">
           <div style="margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
-            <div style="flex:1;min-width:180px;">
-              <label style="font-weight:700;font-size:.86rem;color:var(--text-mid);display:block;margin-bottom:5px;">Topic Name <span style="color:var(--coral)">*</span></label>
-              <input type="text" id="qb-topic" placeholder="e.g. The Solar System, Long Division..." style="border:2px solid #e9ecef;border-radius:8px;padding:10px;font-size:.9rem;width:100%;">
+            <div style="min-width:160px;">
+              <label style="font-weight:700;font-size:.86rem;color:var(--text-mid);display:block;margin-bottom:5px;">Filter by Grade</label>
+              <select id="qb-grade-filter" onchange="qbPopulateDropdown()" style="border:2px solid #e9ecef;border-radius:8px;padding:10px;font-size:.9rem;width:100%;background:white;">
+                <option value="">All Grades</option>
+                <option>Pre-K</option><option>Kindergarten</option><option>Grade 1</option><option>Grade 2</option>
+                <option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+                <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option>Grade 10</option>
+                <option>Grade 11</option><option>Grade 12</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:200px;">
+              <label style="font-weight:700;font-size:.86rem;color:var(--text-mid);display:block;margin-bottom:5px;">Topic <span style="color:var(--coral)">*</span></label>
+              <select id="qb-topic-sel" onchange="qbOnTopicSelect()" style="border:2px solid #e9ecef;border-radius:8px;padding:10px;font-size:.9rem;width:100%;background:white;margin-bottom:7px;">
+                <option value="">— Choose a topic —</option>
+              </select>
+              <div id="qb-custom-wrap" style="display:none;">
+                <input type="text" id="qb-topic-custom" placeholder="New topic name (e.g. The Water Cycle)..." style="border:2px solid var(--ocean-light);border-radius:8px;padding:10px;font-size:.9rem;width:100%;margin-bottom:4px;">
+                <div style="font-size:.76rem;color:var(--text-light);margin-bottom:6px;">This topic will be added to the system and can be assigned to children.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);">Subject:</label>
+                  <select id="qb-custom-subject" style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;background:white;">
+                    <option>Math</option><option>Reading</option><option>Science</option><option>Social Studies</option><option>Art</option><option>Music</option>
+                  </select>
+                </div>
+              </div>
             </div>
             <div style="flex:1;min-width:200px;">
               <label style="font-weight:700;font-size:.86rem;color:var(--text-mid);display:block;margin-bottom:5px;">Intro Text</label>
@@ -540,6 +573,7 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
           <div id="qb-questions-list" style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;"></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
             <button class="btn-secondary" onclick="qbAddQuestion()">+ Add Question</button>
+            <button class="btn-secondary" onclick="qbAddImageQuestion()">🖼 Add Image Question</button>
             <button class="btn-primary" onclick="qbSaveQuiz()">💾 Save Quiz</button>
           </div>
           <div id="qb-saved-list" style="margin-top:28px;"></div>
@@ -907,8 +941,50 @@ addQ('Atoms & the Periodic Table','Atoms are the smallest units of an element. T
    QUIZ BUILDER — parent creates custom topic quizzes
 ════════════════════════════════════════════════════ */
 let _qbCount=0;
+
+function qbGetAllTopics(gradeFilter){
+  const seen=new Set();const list=[];
+  Object.entries(SUBJECT_TOPICS).forEach(([subject,gradeMap])=>{
+    const grades=gradeFilter?[gradeFilter]:Object.keys(gradeMap);
+    grades.forEach(g=>{
+      (gradeMap[g]||[]).forEach(t=>{if(!seen.has(t)){seen.add(t);list.push({topic:t,subject});}});
+    });
+  });
+  Object.values(state.customQuizzes||{}).forEach(cq=>{
+    if(!seen.has(cq.topic)){seen.add(cq.topic);list.push({topic:cq.topic,subject:cq.subject||'Custom'});}
+  });
+  list.sort((a,b)=>a.topic.localeCompare(b.topic));
+  return list;
+}
+
+function qbPopulateDropdown(){
+  const sel=document.getElementById('qb-topic-sel');if(!sel) return;
+  const gradeFilter=document.getElementById('qb-grade-filter')?.value||'';
+  const topics=qbGetAllTopics(gradeFilter);
+  const grouped={};
+  topics.forEach(({topic,subject})=>{if(!grouped[subject]) grouped[subject]=[];grouped[subject].push(topic);});
+  const prevVal=sel.value;
+  sel.innerHTML='<option value="">— Choose a topic —</option>';
+  Object.entries(grouped).sort().forEach(([subj,tops])=>{
+    const og=document.createElement('optgroup');og.label=subj;
+    tops.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t+(getQuizForTopic(t)?' ✏️':'');og.appendChild(o);});
+    sel.appendChild(og);
+  });
+  const custOg=document.createElement('optgroup');custOg.label='➕ Create New';
+  const custO=document.createElement('option');custO.value='__custom__';custO.textContent='✨ Custom topic...';
+  custOg.appendChild(custO);sel.appendChild(custOg);
+  if(prevVal) sel.value=prevVal;
+}
+
+function qbOnTopicSelect(){
+  const val=document.getElementById('qb-topic-sel')?.value||'';
+  const wrap=document.getElementById('qb-custom-wrap');
+  if(wrap) wrap.style.display=val==='__custom__'?'block':'none';
+}
+
 function renderQuizBuilderSaved(){
   const el=document.getElementById('qb-saved-list');if(!el) return;
+  qbPopulateDropdown();
   const saved=Object.values(state.customQuizzes||{});
   if(!saved.length){el.innerHTML='<p style="color:var(--text-light);font-size:.88rem;margin-top:12px;">No custom quizzes yet — create one above!</p>';return;}
   el.innerHTML=`<div style="font-weight:800;font-size:.97rem;margin-bottom:12px;color:var(--ocean-deep);">📚 Your Custom Quizzes (${saved.length})</div>
@@ -916,12 +992,13 @@ function renderQuizBuilderSaved(){
     <div style="background:white;border-radius:10px;padding:12px 16px;border:2px solid #e9ecef;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;font-size:.93rem;">${cq.topic} <span style="font-size:.65rem;font-weight:800;background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:50px;margin-left:4px;">✏️ Custom Quiz</span></div>
-        <div style="font-size:.78rem;color:var(--text-light);margin-top:2px;">${cq.questions.length} questions • Saved ${cq.savedAt}</div>
+        <div style="font-size:.78rem;color:var(--text-light);margin-top:2px;">${cq.questions.length} questions • Saved ${cq.savedAt}${cq.subject?' • '+cq.subject:''}</div>
       </div>
       <button class="btn-danger" style="padding:6px 13px;font-size:.8rem;" onclick="qbDeleteQuiz('${cq.topic.replace(/'/g,"\\'")}')">🗑 Delete</button>
     </div>`).join('')}
   </div>`;
 }
+
 function qbAddQuestion(){
   _qbCount++;
   const wrap=document.createElement('div');
@@ -948,37 +1025,108 @@ function qbAddQuestion(){
     </div>`;
   document.getElementById('qb-questions-list').appendChild(wrap);
 }
+
+function qbAddImageQuestion(){
+  _qbCount++;
+  const wrap=document.createElement('div');
+  wrap.className='qb-question-block';
+  wrap.dataset.imgQuestion='1';
+  wrap.style.cssText='background:#f0f8ff;border-radius:12px;padding:14px;border:2px solid var(--ocean-light);';
+  wrap.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+      <div style="font-weight:800;font-size:.88rem;color:var(--ocean-mid);">🖼 Image Question ${_qbCount}</div>
+      <button onclick="this.closest('.qb-question-block').remove()" style="background:none;color:var(--coral);font-size:1rem;font-weight:700;cursor:pointer;border:none;">✕</button>
+    </div>
+    <input type="text" class="qb-q" placeholder="Question text (e.g. 'What animal is shown?')" style="border:2px solid #e9ecef;border-radius:8px;padding:8px 10px;font-size:.88rem;width:100%;margin-bottom:8px;">
+    <div style="margin-bottom:8px;">
+      <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:4px;">Question Image (optional)</label>
+      <input type="url" class="qb-img-url" placeholder="Paste image URL (e.g. https://upload.wikimedia.org/...)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;width:100%;margin-bottom:5px;">
+      <div class="qb-img-preview" style="display:none;margin-top:5px;"><img style="max-height:120px;border-radius:8px;border:2px solid #e9ecef;"></div>
+      <button onclick="qbPreviewImg(this)" style="font-size:.78rem;font-weight:700;color:var(--ocean-mid);background:none;border:none;cursor:pointer;padding:0;">Preview image ↗</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:4px;">Answer Options <span style="font-weight:500;">(text or image URLs)</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+        <input type="text" class="qb-a0" placeholder="A: text or image URL" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+        <input type="text" class="qb-a1" placeholder="B: text or image URL" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+        <input type="text" class="qb-a2" placeholder="C: text or image URL (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+        <input type="text" class="qb-a3" placeholder="D: text or image URL (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <label style="font-weight:700;font-size:.83rem;color:var(--text-mid);">Correct:</label>
+      <select class="qb-correct" style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;background:white;">
+        <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+      </select>
+      <input type="text" class="qb-feedback" placeholder="Feedback after answer..." style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px;">
+    </div>`;
+  document.getElementById('qb-questions-list').appendChild(wrap);
+}
+
+function qbPreviewImg(btn){
+  const wrap=btn.closest('.qb-question-block');
+  const url=(wrap.querySelector('.qb-img-url')?.value||'').trim();
+  const preview=wrap.querySelector('.qb-img-preview');
+  const img=preview?.querySelector('img');
+  if(!url||!preview||!img){showToast('Paste an image URL first!','error');return;}
+  img.src=url;
+  img.onerror=()=>{preview.style.display='none';showToast('Could not load image — check the URL.','error');};
+  img.onload=()=>{preview.style.display='block';};
+}
+
 function qbSaveQuiz(){
-  const topic=(document.getElementById('qb-topic')?.value||'').trim();
+  const selVal=document.getElementById('qb-topic-sel')?.value||'';
+  const isCustom=selVal==='__custom__';
+  const topic=isCustom
+    ?(document.getElementById('qb-topic-custom')?.value||'').trim()
+    :selVal;
+  const subject=isCustom
+    ?(document.getElementById('qb-custom-subject')?.value||'Custom')
+    :(qbGetAllTopics('').find(x=>x.topic===topic)?.subject||'Custom');
   const intro=(document.getElementById('qb-intro')?.value||'').trim()||`Quiz on ${topic}.`;
-  if(!topic){showToast('Enter a topic name!','error');return;}
+  if(!topic){showToast('Choose or enter a topic name!','error');return;}
   const qEls=[...document.getElementById('qb-questions-list').querySelectorAll('.qb-question-block')];
   if(qEls.length<2){showToast('Add at least 2 questions!','error');return;}
   const questions=[];
   for(const el of qEls){
     const q=(el.querySelector('.qb-q')?.value||'').trim();
+    const imgUrl=(el.querySelector('.qb-img-url')?.value||'').trim();
     const rawOpts=[0,1,2,3].map(i=>(el.querySelector(`.qb-a${i}`)?.value||'').trim());
     const correctIdx=parseInt(el.querySelector('.qb-correct')?.value||'0');
     const f=(el.querySelector('.qb-feedback')?.value||'').trim()||'Good try!';
     if(!q){showToast('Fill in all question texts!','error');return;}
-    // Keep only filled options, map correct index
     const filled=rawOpts.map((o,i)=>({o,i})).filter(x=>x.o);
     if(filled.length<2){showToast('Each question needs at least 2 options!','error');return;}
     const newCorrect=filled.findIndex(x=>x.i===correctIdx);
-    questions.push({q,a:filled.map(x=>x.o),c:newCorrect<0?0:newCorrect,f});
+    const qObj={q,a:filled.map(x=>x.o),c:newCorrect<0?0:newCorrect,f};
+    if(imgUrl) qObj.img=imgUrl;
+    questions.push(qObj);
   }
   if(!state.customQuizzes) state.customQuizzes={};
   const key=topic.toLowerCase().trim();
   TQ[key]={intro,questions,isCustom:true};
-  state.customQuizzes[key]={topic,intro,questions,savedAt:new Date().toLocaleDateString()};
+  state.customQuizzes[key]={topic,subject,intro,questions,savedAt:new Date().toLocaleDateString()};
+  // For custom topics: inject into SUBJECT_TOPICS so they appear in curriculum builder
+  if(isCustom){
+    if(!SUBJECT_TOPICS[subject]) SUBJECT_TOPICS[subject]={};
+    GRADES.forEach(g=>{
+      if(!SUBJECT_TOPICS[subject][g]) SUBJECT_TOPICS[subject][g]=[];
+      if(!SUBJECT_TOPICS[subject][g].includes(topic)) SUBJECT_TOPICS[subject][g].push(topic);
+    });
+    showToast(`Quiz + topic "${topic}" saved! Parents can now assign it. ✏️`,'success');
+  } else {
+    showToast(`Quiz for "${topic}" saved! ✏️`,'success');
+  }
   // Reset form
-  document.getElementById('qb-topic').value='';
+  document.getElementById('qb-topic-sel').value='';
+  const customInput=document.getElementById('qb-topic-custom');if(customInput) customInput.value='';
   document.getElementById('qb-intro').value='';
   document.getElementById('qb-questions-list').innerHTML='';
+  const customWrap=document.getElementById('qb-custom-wrap');if(customWrap) customWrap.style.display='none';
   _qbCount=0;
   renderQuizBuilderSaved();
-  showToast(`Quiz for "${topic}" saved! ✏️`,'success');
 }
+
 function qbDeleteQuiz(topic){
   const key=topic.toLowerCase().trim();
   delete TQ[key];
@@ -988,8 +1136,73 @@ function qbDeleteQuiz(topic){
 }
 
 /* ════════════════════════════════════════════════════
-   QUIZ LOOKUP: topic name → quiz definition
+   BUILT-IN LESSON CONTENT — reading material per topic
+   Each entry: { summary, keyPoints[], learnMore[] }
+   learnMore: { label, url } — links to open resources
 ════════════════════════════════════════════════════ */
+const LC={};
+function addLC(topic,summary,keyPoints,learnMore){LC[topic.toLowerCase().trim()]={summary,keyPoints,learnMore:learnMore||[]};}
+
+addLC('Addition to 10','Addition means combining two groups to find the total. When we add 3 + 4, we count 3 things and then 4 more things together to get 7. You can use fingers, objects, or a number line to help!',['The + sign means add','The = sign means equals the answer','Numbers 0–10 can be added in any order (3+4 = 4+3)','Adding 0 to any number keeps it the same'],[{label:'Khan Academy: Addition',url:'https://www.khanacademy.org/math/early-math/cc-early-math-add-sub-basics'},{label:'Math is Fun: Addition',url:'https://www.mathsisfun.com/numbers/addition.html'}]);
+
+addLC('Counting 1–5','Counting is how we find out how many things there are. We count one object at a time, saying a number for each one: one, two, three, four, five! The last number we say tells us the total.',['Always count each object once','The numbers go in order: 1, 2, 3, 4, 5','5 is bigger than 1','Zero means none at all'],[{label:'Khan Academy: Counting',url:'https://www.khanacademy.org/math/early-math/cc-early-math-counting-topic'}]);
+
+addLC('Shapes','Shapes are everywhere! A circle is perfectly round with no corners. A square has 4 equal sides and 4 corners. A triangle has 3 sides and 3 corners. A rectangle has 4 sides but opposite sides are equal.',['Circles have no corners or straight sides','Squares have 4 equal sides and 4 right angles','Triangles always have exactly 3 sides','Rectangles are like stretched squares'],[{label:'Math is Fun: Shapes',url:'https://www.mathsisfun.com/shape.html'},{label:'Khan Academy: Geometry',url:'https://www.khanacademy.org/math/geometry'}]);
+
+addLC('Multiplication Facts','Multiplication is a fast way to add the same number many times. 3 × 4 means "3 groups of 4" which is the same as 4 + 4 + 4 = 12. Learning multiplication facts by heart makes math much faster!',['× means "groups of"','3 × 4 = 4 × 3 (order doesn\'t change the answer)','Any number × 0 = 0','Any number × 1 = that same number','The times tables are worth memorizing!'],[{label:'Khan Academy: Multiplication',url:'https://www.khanacademy.org/math/arithmetic/x18ca194a:multiplication-division'},{label:'Math is Fun: Multiplication',url:'https://www.mathsisfun.com/times-table.html'}]);
+
+addLC('Fractions','A fraction shows a part of a whole thing. If you cut a pizza into 4 equal slices and eat 1 slice, you ate 1/4 (one quarter) of the pizza. The bottom number (denominator) tells us how many equal parts the whole is divided into. The top number (numerator) tells us how many parts we have.',['Fractions show parts of a whole','The denominator (bottom) = total equal parts','The numerator (top) = parts you have','1/2 is bigger than 1/4','Equal parts must all be the same size'],[{label:'Khan Academy: Fractions',url:'https://www.khanacademy.org/math/cc-third-grade-math/cc-3rd-fractions-topic'},{label:'Math is Fun: Fractions',url:'https://www.mathsisfun.com/fractions.html'}]);
+
+addLC('Animals & Habitats','Every animal lives in a habitat — a place that gives it food, water, shelter, and the right climate. Polar bears live in the Arctic because their thick fur keeps them warm. Fish live in water and breathe through gills. Each animal is specially adapted to survive in its home.',['A habitat provides food, water, and shelter','Animals have special body features for their habitat','Mammals have fur/hair and nurse young with milk','Fish breathe through gills','Reptiles are cold-blooded and have scales'],[{label:'Khan Academy: Living Things',url:'https://www.khanacademy.org/science/biology/ecology'},{label:'National Geographic Kids: Animals',url:'https://kids.nationalgeographic.com/animals'}]);
+
+addLC('Solar System & Space','Our solar system has 8 planets all orbiting the Sun. Mercury is closest and Venus is the hottest. Earth is third from the Sun — the only planet with life! Jupiter is the largest planet, and Saturn has beautiful rings made of ice and rock.',['The Sun is a star at the center of our solar system','8 planets orbit the Sun','Mercury is closest to the Sun','Jupiter is the largest planet','Earth takes 365 days to orbit the Sun (1 year)'],[{label:'NASA Solar System Exploration',url:'https://solarsystem.nasa.gov/planets/overview/'},{label:'Khan Academy: Earth & Space',url:'https://www.khanacademy.org/science/astronomy'}]);
+
+addLC('Mammals & Their Traits','Mammals are a special group of animals. All mammals: are warm-blooded (they control their own body temperature), have hair or fur, breathe air with lungs, and feed their babies milk. Humans, dogs, dolphins, and even bats are all mammals!',['All mammals are warm-blooded','Mammals have hair or fur','Mothers nurse babies with milk','Mammals breathe air with lungs','Bats are the only flying mammals','Whales and dolphins are ocean mammals'],[{label:'BBC Bitesize: Mammals',url:'https://www.bbc.co.uk/bitesize/topics/zyf6f4j'},{label:'National Geographic: Mammals',url:'https://kids.nationalgeographic.com/animals/mammals'}]);
+
+addLC('Plant Life Cycles','Plants grow from tiny seeds. Add water and warmth and the seed germinates (sprouts) into a seedling. The seedling grows roots that anchor it and absorb water, and leaves that capture sunlight. Mature plants flower to attract pollinators, then produce seeds to start the cycle again!',['Seeds need water, warmth, and air to germinate','Roots absorb water and anchor the plant','Leaves capture sunlight for photosynthesis','Flowers attract pollinators like bees','Fruits protect seeds and help them spread'],[{label:'CK-12: Plant Life Cycles',url:'https://flexbooks.ck12.org/cbook/ck-12-biology-flexbook-2.0/section/9.1/'},{label:'BBC Bitesize: Plants',url:'https://www.bbc.co.uk/bitesize/topics/zy66fg8'}]);
+
+addLC('States of Matter','Everything around us is made of matter, and matter comes in three main states. Solids (like ice) have a fixed shape. Liquids (like water) take the shape of their container. Gases (like steam) spread out to fill any space. Heat makes matter change state!',['Solid: fixed shape and volume','Liquid: fixed volume, takes container\'s shape','Gas: spreads out to fill its container','Heating can turn solid→liquid (melting) or liquid→gas (evaporation)','Cooling reverses these changes'],[{label:'CK-12: States of Matter',url:'https://flexbooks.ck12.org/cbook/ck-12-middle-school-physical-science-flexbook-2.0/section/3.1/'},{label:'BBC Bitesize: States of Matter',url:'https://www.bbc.co.uk/bitesize/topics/zcrrd2p'}]);
+
+addLC('Food Chains & Food Webs','Energy flows through ecosystems in food chains. Plants (producers) make food from sunlight. Herbivores (plant-eaters) eat plants. Carnivores eat herbivores. At the end, decomposers like fungi and bacteria break down dead matter and return nutrients to the soil. A food web shows how many food chains connect.',['Producers (plants) make food via photosynthesis','Primary consumers eat plants (herbivores)','Secondary consumers eat primary consumers','Decomposers recycle nutrients back to soil','Energy is lost at each level (~90%)'],[{label:'Khan Academy: Ecology',url:'https://www.khanacademy.org/science/ap-biology/ecology-ap'},{label:'BBC Bitesize: Food Chains',url:'https://www.bbc.co.uk/bitesize/topics/zbcw2hv'}]);
+
+addLC('American Revolution','The 13 American colonies declared independence from Britain in 1776. Colonists were angry about unfair taxes ("No taxation without representation!"). George Washington led the Continental Army. The Declaration of Independence, written by Thomas Jefferson, stated that all people have the right to "life, liberty, and the pursuit of happiness." The Treaty of Paris (1783) ended the war.',['The war lasted 1775–1783','"No taxation without representation" was a key slogan','Thomas Jefferson wrote the Declaration of Independence','George Washington commanded the Continental Army','The Battle of Saratoga was a turning point','The Treaty of Paris officially ended the war'],[{label:'Khan Academy: American Revolution',url:'https://www.khanacademy.org/humanities/us-history/colonial-america/american-revolution'},{label:'History.com: American Revolution',url:'https://www.history.com/topics/american-revolution'}]);
+
+addLC('Community Helpers','Community helpers are the people who keep our neighborhoods safe, healthy, and running smoothly every day. Firefighters put out fires and save lives. Doctors and nurses care for sick people. Police officers enforce laws and help in emergencies. Teachers educate children. Mail carriers deliver letters and packages. Everyone in a community plays an important role!',['Firefighters protect people and property from fires','Doctors and nurses provide medical care','Police officers keep communities safe','Teachers help children learn and grow','Mail carriers and delivery drivers keep goods moving','Construction workers build and fix our infrastructure'],[{label:'Khan Academy: Community',url:'https://www.khanacademy.org/humanities/hass-social-studies-beginners/x5e6bd3a6b23e76f9:the-world-around-you'}]);
+
+addLC('Ancient Egypt','Ancient Egypt was one of the world\'s first great civilizations, lasting over 3,000 years along the Nile River. Pharaohs ruled as god-kings. Huge pyramids were built as royal tombs. Egyptians invented hieroglyphics (picture-writing), made paper from papyrus reeds, and developed a 365-day calendar.',['The Nile River flooded yearly, depositing rich soil for farming','Pharaohs were divine rulers — both kings and gods','The Great Pyramid of Giza is one of the Seven Wonders','Hieroglyphics was a writing system of pictures and symbols','The Rosetta Stone helped modern scholars decode hieroglyphics'],[{label:'Khan Academy: Ancient Egypt',url:'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/ancient-egypt-hittites/a/ancient-egypt'},{label:'British Museum: Ancient Egypt',url:'https://www.britishmuseum.org/collection/egypt'}]);
+
+addLC('Ancient Greece','Ancient Greece (circa 800–146 BCE) gave the world democracy, the Olympic Games, philosophy, and foundational ideas in math and science. The two most powerful city-states were Athens (known for democracy and culture) and Sparta (known for military strength). Thinkers like Socrates, Plato, and Aristotle shaped Western philosophy.',['Greece was made up of independent city-states called poleis','Athens developed early democracy — citizens voted on laws','Sparta was a powerful military city-state','The Olympics began in Olympia in 776 BCE','Greek philosophers asked big questions about life and knowledge','Alexander the Great spread Greek culture across a vast empire'],[{label:'Khan Academy: Ancient Greece',url:'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/classical-greek-culture'},{label:'National Geographic: Ancient Greece',url:'https://www.nationalgeographic.com/culture/article/ancient-greece'}]);
+
+addLC('Civil Rights Movement','The Civil Rights Movement (1950s–1960s) was a struggle by African Americans to end racial segregation and discrimination in the United States. Leaders like Dr. Martin Luther King Jr. used nonviolent protest — marches, sit-ins, and speeches. The movement led to landmark laws including the Civil Rights Act (1964) and the Voting Rights Act (1965).',['Jim Crow laws enforced racial segregation in the South','Rosa Parks refused to give up her bus seat in 1955','Dr. King gave his "I Have a Dream" speech in 1963','The March on Washington gathered 250,000 people','The Civil Rights Act of 1964 banned discrimination','The Voting Rights Act of 1965 protected voting rights'],[{label:'Khan Academy: Civil Rights',url:'https://www.khanacademy.org/humanities/us-history/postwarera/civil-rights-movement'},{label:'National Archives: Civil Rights',url:'https://www.archives.gov/research/civil-rights'}]);
+
+addLC('Sight Words','Sight words are common words that appear very often in books and writing. Because they appear so frequently, fluent readers recognize them instantly without sounding them out. Learning sight words by heart makes reading much faster and smoother.',['Sight words are the most common words in English','Examples: the, is, are, was, said, have, they','Practice them daily with flashcards or reading','Recognize them by shape, not just letters','Dolch and Fry lists are the most common sight word lists'],[{label:'Sight Words: Dolch List',url:'https://sightwords.com/sight-words/dolch/'},{label:'Khan Academy: Reading',url:'https://www.khanacademy.org/ela/cc-1st-reading-informational'}]);
+
+addLC('Reading Comprehension','Reading comprehension is understanding what you read — not just the words, but the meaning. Good readers ask questions, find the main idea, make inferences, and connect new information to what they already know.',['Main idea = what the whole text is mostly about','Supporting details explain or prove the main idea','Inference = using clues to figure out unstated information','Summarizing = restating the key points briefly','Context clues help figure out unknown words'],[{label:'Khan Academy: Reading',url:'https://www.khanacademy.org/ela'},{label:'ReadWorks (free articles)',url:'https://www.readworks.org/'}]);
+
+addLC('Vocabulary Building','A rich vocabulary helps you understand what you read and express your ideas clearly. You can grow your vocabulary by reading widely, learning word roots and prefixes, and using context clues to figure out new words.',['Synonyms have similar meanings (happy/joyful)','Antonyms have opposite meanings (hot/cold)','Prefixes change word meaning (un-, re-, pre-)','Suffixes change word type (-ful, -less, -tion)','Root words are the base of many related words','Context clues are hints in surrounding sentences'],[{label:'Merriam-Webster Word of the Day',url:'https://www.merriam-webster.com/word-of-the-day'},{label:'Vocabulary.com',url:'https://www.vocabulary.com/'}]);
+
+addLC('Cell Biology Basics','Cells are the basic building blocks of all living things. Your body has about 37 trillion cells! Every cell has a cell membrane (outer boundary), cytoplasm (jelly-like fluid inside), and most have a nucleus (the control center containing DNA). Plant cells also have a rigid cell wall and chloroplasts for photosynthesis.',['All living things are made of cells (Cell Theory)','The nucleus contains DNA — the cell\'s instruction manual','The cell membrane controls what enters and leaves','Mitochondria produce energy (ATP) for the cell','Plant cells have cell walls and chloroplasts','Animal cells do NOT have cell walls'],[{label:'Khan Academy: Cell Biology',url:'https://www.khanacademy.org/science/ap-biology/cell-biology'},{label:'CK-12: Cells',url:'https://flexbooks.ck12.org/cbook/ck-12-biology-flexbook-2.0/section/2.1/'}]);
+
+addLC('Physical Science – Newton\'s Laws','Isaac Newton\'s three laws of motion explain how forces cause objects to move (or stay still). First Law: an object stays at rest or keeps moving unless a force acts on it (inertia). Second Law: F = ma (force = mass × acceleration). Third Law: every action has an equal and opposite reaction!',['1st Law: Objects resist changes in motion (inertia)','2nd Law: F = ma — more force = more acceleration','3rd Law: Every action has an equal and opposite reaction','Gravity is a force that pulls objects toward Earth','Friction is a force that slows moving objects'],[{label:'Khan Academy: Forces & Motion',url:'https://www.khanacademy.org/science/physics/forces-newtons-laws'},{label:'Physics Classroom: Newton\'s Laws',url:'https://www.physicsclassroom.com/class/newtlaws'}]);
+
+addLC('Genetics & Heredity','Genes are segments of DNA that carry the instructions for making you. You inherit two copies of each gene — one from each parent. Some genes are dominant (one copy is enough to show the trait) and some are recessive (you need two copies). Eye color, hair color, and height are all influenced by genes.',['DNA is the molecule that carries genetic information','Genes are sections of DNA that code for traits','You inherit one gene copy from each parent','Dominant alleles show with just one copy','Recessive alleles only show when you have two copies','Mutations are changes in DNA — can be harmful or neutral'],[{label:'Khan Academy: Genetics',url:'https://www.khanacademy.org/science/ap-biology/heredity'},{label:'Genetics Home Reference',url:'https://medlineplus.gov/genetics/'}]);
+
+addLC('Evolution & Natural Selection','Charles Darwin discovered that species change over time through natural selection. Individuals with traits better suited to their environment survive longer and reproduce more. Over many generations, useful traits become more common. This process has produced the incredible diversity of life on Earth.',['Natural selection = "survival of the fittest" (most reproductive success)','Variations in traits exist naturally within populations','Favorable traits are passed to offspring','Over many generations, species gradually change','Fossil evidence shows how species changed over time','Darwin studied finches in the Galápagos Islands'],[{label:'Khan Academy: Evolution',url:'https://www.khanacademy.org/science/ap-biology/natural-selection'},{label:'National Geographic: Evolution',url:'https://www.nationalgeographic.com/science/article/evolution'}]);
+
+addLC('Colors & Color Mixing','The three primary colors are red, yellow, and blue. You cannot make these by mixing other colors. Mix two primaries to get secondary colors: red + yellow = orange, blue + yellow = green, red + blue = purple. Colors opposite each other on the color wheel are complementary and create strong contrast when used together.',['Primary colors: red, yellow, blue','Secondary colors: orange, green, purple','Mix two primaries to get a secondary','Complementary colors are opposite on the wheel','Warm colors: red, orange, yellow','Cool colors: blue, green, purple','Adding white makes a tint; adding black makes a shade'],[{label:'Color Matters',url:'https://www.colormatters.com/color-and-design/basic-color-theory'},{label:'Kahn Academy: Art',url:'https://www.khanacademy.org/humanities/art-history'}]);
+
+addLC('Rhythm & Beat','Music has a steady pulse called the beat — like a heartbeat. Rhythm is the pattern of sounds placed over that beat. Some sounds are long, some are short, some are strong, some are soft. A quarter note gets one beat, a half note gets two, and a whole note gets four beats in common time (4/4).',['The beat is the steady, repeating pulse in music','Rhythm is the pattern of long and short sounds','Tempo = how fast or slow the beat is','Forte (f) means loud; piano (p) means soft','A quarter note = 1 beat; half note = 2 beats; whole note = 4 beats','Time signature 4/4 means 4 beats per measure'],[{label:'musictheory.net: Basics',url:'https://www.musictheory.net/lessons'},{label:'Khan Academy: Music',url:'https://www.khanacademy.org/humanities/music'}]);
+
+function getLessonContent(topicName){
+  const key=topicName.toLowerCase().trim();
+  if(LC[key]) return LC[key];
+  for(const k of Object.keys(LC)){
+    if(key.includes(k)||k.includes(key.split('–')[0].trim())) return LC[k];
+  }
+  return null;
+}
+
+
 function getQuizForTopic(topicName){
   const key=topicName.toLowerCase().trim();
   if(TQ[key]) return TQ[key];
@@ -1007,7 +1220,7 @@ function shuffleQuestions(questions,n){
   return selected.map(q=>{
     const opts=q.a.map((text,i)=>({text,isCorrect:i===q.c}));
     for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
-    return{q:q.q,options:opts.map(o=>o.text),correct:opts.findIndex(o=>o.isCorrect),feedback:q.f};
+    return{q:q.q,img:q.img||null,options:opts.map(o=>o.text),correct:opts.findIndex(o=>o.isCorrect),feedback:q.f};
   });
 }
 
@@ -1285,7 +1498,14 @@ function openChangeChildEmoji(id){
 function openChangeParentAvatar(){
   openModal('Change Parent Avatar','Choose a new icon.',
     `<div class="emoji-grid" id="pe-grid">${PARENT_EMOJIS.map(e=>`<button class="emoji-btn${e===state.parentEmoji?' selected':''}" onclick="pickEmoji('pe-grid','pe-val','${e}',this)">${e}</button>`).join('')}</div><input type="hidden" id="pe-val" value="${state.parentEmoji}">`,
-    'Save','btn-primary',()=>{state.parentEmoji=document.getElementById('pe-val').value;document.getElementById('parent-nav-avatar').textContent=state.parentEmoji;closeModal();showToast('Updated! ✅','success');});
+    'Save','btn-primary',()=>{
+      const newEmoji=document.getElementById('pe-val').value||state.parentEmoji;
+      state.parentEmoji=newEmoji;
+      const navEl=document.getElementById('parent-nav-avatar');
+      if(navEl) navEl.textContent=newEmoji;
+      closeModal();
+      showToast('Avatar updated! ✅','success');
+    });
 }
 
 /* ════════════════════════════════════════════════════
@@ -1495,18 +1715,77 @@ async function generateLesson(){
   const out=document.getElementById('ai-output'),body=document.getElementById('ai-output-body');
   out.classList.remove('hidden');
   body.innerHTML=`<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  // Check for API key in localStorage
+  const apiKey=localStorage.getItem('oa_api_key')||'';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:
-        `Expert homeschool curriculum designer. Create lesson plan:\nChild: ${child?child.name:'Student'} | Grade: ${grade} | Topic: ${topic} | Style: ${style}${notes?'\nNotes: '+notes:''}\n\n1. **Lesson Title**\n2. **Learning Objectives** (3-4)\n3. **Materials Needed**\n4. **Introduction Hook**\n5. **Main Content** (3 sections)\n6. **Activities** (2-3 hands-on)\n7. **Discussion Questions** (3)\n8. **Extension Activity**\n9. **Assessment**\n10. **Parent Tips**\n\nBe enthusiastic and age-appropriate for ${grade}!`
+    if(!apiKey) throw new Error('no-key');
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1200,messages:[{role:'user',content:
+        `You are an expert homeschool curriculum designer. Create a detailed lesson plan:\nChild: ${child?child.name:'Student'} | Grade: ${grade} | Topic: ${topic} | Learning Style: ${style}${notes?'\nNotes: '+notes:''}\n\nProvide:\n1. **Lesson Title**\n2. **Learning Objectives** (3-4 bullet points)\n3. **Materials Needed**\n4. **Introduction Hook** (engaging opener)\n5. **Main Content** (3 clear sections with explanations)\n6. **Hands-on Activities** (2-3 activities)\n7. **Discussion Questions** (3 questions)\n8. **Extension Activity**\n9. **Quick Assessment** (how to check understanding)\n10. **Parent Tips**\n\nBe enthusiastic, age-appropriate for ${grade}, and practical!`
       }]})});
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'API error');}
     const data=await res.json();
-    const text=data.content?.map(b=>b.text||'').join('')||'Could not generate. Try again.';
-    body.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    if(!text) throw new Error('empty');
+    body.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^#{1,3} (.+)$/gm,'<strong style="font-size:1rem;color:var(--ocean-deep);">$1</strong>').replace(/^• (.+)$/gm,'&nbsp;&nbsp;• $1').replace(/\n/g,'<br>');
   }catch(e){
-    body.innerHTML=`<strong style="color:var(--coral)">⚠️ Could not connect to AI.</strong><br><br><strong>Quick framework for "${topic}" (${grade}):</strong><br>🎯 Objective: Understand ${topic}<br>📖 Read: Find a book or article<br>🔬 Explore: Hands-on activity<br>📝 Create: Draw or write<br>💬 Discuss: 3 things learned`;
+    if(e.message==='no-key'){
+      body.innerHTML=`<div style="background:#fff8e1;border-radius:10px;padding:16px;border:2px solid var(--sun);margin-bottom:16px;">
+        <div style="font-weight:800;color:#f57f17;margin-bottom:8px;">🔑 API Key Required</div>
+        <div style="font-size:.88rem;color:var(--text-mid);margin-bottom:10px;">To use live AI generation, add your Anthropic API key. It's stored only in your browser and never sent anywhere except Anthropic.</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="password" id="ai-key-input" placeholder="sk-ant-..." style="border:2px solid #e9ecef;border-radius:8px;padding:8px 11px;font-size:.88rem;flex:1;">
+          <button class="btn-primary" style="padding:8px 16px;font-size:.88rem;white-space:nowrap;" onclick="saveAiKey()">Save Key</button>
+        </div>
+        <div style="font-size:.75rem;color:var(--text-light);margin-top:6px;">Get a free key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--ocean-mid);">console.anthropic.com</a></div>
+      </div>
+      <div style="border-top:2px solid #e9ecef;padding-top:14px;">
+        <strong style="color:var(--ocean-deep);">📋 Offline Framework: ${topic} (${grade})</strong><br><br>
+        ${_offlineLessonPlan(topic,grade,style,notes,child)}
+      </div>`;
+    } else {
+      body.innerHTML=`<strong style="color:var(--coral)">⚠️ ${e.message==='empty'?'Empty response — try again.':'Could not connect: '+e.message}</strong><br><br>
+      <strong style="color:var(--ocean-deep);">📋 Offline Framework: ${topic} (${grade})</strong><br><br>
+      ${_offlineLessonPlan(topic,grade,style,notes,child)}`;
+    }
   }
   btn.disabled=false;btn.innerHTML='<span>✨</span> Generate Lesson Plan';
+}
+function saveAiKey(){
+  const key=(document.getElementById('ai-key-input')?.value||'').trim();
+  if(!key){showToast('Paste your API key first!','error');return;}
+  localStorage.setItem('oa_api_key',key);
+  showToast('Key saved! Click Generate again.','success');
+  document.getElementById('ai-key-input').value='';
+}
+function _offlineLessonPlan(topic,grade,style,notes,child){
+  const name=child?child.name:'the student';
+  const styleMap={'Visual learner':'diagrams, drawings, and visual charts','Hands-on / kinesthetic':'experiments and physical activities','Reading / writing focused':'written notes and reading passages','Auditory learner':'songs, rhymes, and verbal discussion','Mixed / balanced':'a mix of reading, discussion, and activities'};
+  const styleHint=styleMap[style]||'varied activities';
+  return `<strong>1. Lesson Title:</strong> Exploring ${topic}<br><br>
+<strong>2. Learning Objectives:</strong><br>
+&nbsp;&nbsp;• Understand the core concepts of ${topic}<br>
+&nbsp;&nbsp;• Connect ${topic} to real-world examples<br>
+&nbsp;&nbsp;• Demonstrate understanding through ${styleHint}<br>
+&nbsp;&nbsp;• Build curiosity and ask follow-up questions<br><br>
+<strong>3. Materials:</strong> Paper, pencils, internet access, and any relevant books on ${topic}.<br><br>
+<strong>4. Introduction Hook:</strong> Start with a surprising question or real-world example about ${topic} that ${name} can relate to. Ask: "What do you already know about ${topic}?"<br><br>
+<strong>5. Main Content:</strong><br>
+&nbsp;&nbsp;• <em>Part 1 — Background:</em> Introduce what ${topic} is and why it matters.<br>
+&nbsp;&nbsp;• <em>Part 2 — Key Ideas:</em> Cover 2-3 main concepts using ${styleHint}.<br>
+&nbsp;&nbsp;• <em>Part 3 — Examples:</em> Show real-world examples and have ${name} find their own.<br><br>
+<strong>6. Activities:</strong><br>
+&nbsp;&nbsp;• Draw or write a summary of what was learned about ${topic}.<br>
+&nbsp;&nbsp;• Find one real-world example of ${topic} in daily life.<br>
+&nbsp;&nbsp;• Create a simple quiz question about ${topic} to stump a parent!<br><br>
+<strong>7. Discussion Questions:</strong><br>
+&nbsp;&nbsp;• What was the most surprising thing you learned about ${topic}?<br>
+&nbsp;&nbsp;• How does ${topic} connect to something you already knew?<br>
+&nbsp;&nbsp;• If you could learn one more thing about ${topic}, what would it be?<br><br>
+<strong>8. Extension:</strong> Research one famous person, event, or discovery related to ${topic} and share it at dinner!<br><br>
+<strong>9. Assessment:</strong> Ask ${name} to explain ${topic} in their own words, as if teaching a younger sibling.<br><br>
+<strong>10. Parent Tips:</strong> Keep sessions short (15-20 min). Follow ${name}'s curiosity — if they ask a tangential question, explore it! ${notes?'<br><em>Your notes: '+notes+'</em>':''}`;
 }
 
 /* ════════════════════════════════════════════════════
@@ -1845,8 +2124,33 @@ function showTopicStart(subjectName,topicName){
   </div>`:'';
   const attBadge=att.attempts>0?`<div style="margin-bottom:10px;font-size:.85rem;color:var(--text-light);font-weight:700;">${att.passed?`✅ Best score: ${att.bestScore||'—'}%  ⭐ ${att.stars} stars earned`:`Attempt ${att.attempts}/2 used`}</div>`:'';
   const area=document.getElementById('lesson-content-area');
+  const lesson=getLessonContent(topicName||subjectName);
+  const lessonHTML=lesson?`
+    <div style="background:white;border-radius:var(--radius-xl);padding:22px;box-shadow:var(--shadow-soft);margin-bottom:16px;border:2px solid var(--ocean-light);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="font-size:1.4rem;">📘</div>
+        <div>
+          <div style="font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:800;color:var(--ocean-deep);">Reading: ${topicName}</div>
+          <div style="font-size:.78rem;color:var(--text-light);font-weight:600;">Read before taking the quiz!</div>
+        </div>
+      </div>
+      <p style="font-size:.93rem;color:var(--text-mid);line-height:1.75;margin-bottom:14px;">${lesson.summary}</p>
+      <div style="background:var(--ocean-foam);border-radius:var(--radius-md);padding:14px;margin-bottom:14px;">
+        <div style="font-weight:800;font-size:.85rem;color:var(--ocean-deep);margin-bottom:8px;">🔑 Key Points</div>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;">
+          ${lesson.keyPoints.map(p=>`<li style="font-size:.88rem;color:var(--text-mid);line-height:1.5;">${p}</li>`).join('')}
+        </ul>
+      </div>
+      ${lesson.learnMore.length?`<div style="border-top:2px solid #e9ecef;padding-top:11px;">
+        <div style="font-weight:800;font-size:.82rem;color:var(--text-mid);margin-bottom:7px;">📚 Learn More (opens new tab)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;">
+          ${lesson.learnMore.map(l=>`<a href="${l.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background:#e3f2fd;color:var(--ocean-mid);padding:4px 11px;border-radius:50px;font-size:.78rem;font-weight:800;text-decoration:none;">🔗 ${l.label}</a>`).join('')}
+        </div>
+      </div>`:''}
+    </div>`:'';
   area.innerHTML=`
     ${sourcesHTML}
+    ${lessonHTML}
     <div class="lesson-intro" style="margin-bottom:18px;text-align:center;">
       <h3 style="margin-bottom:8px;">📖 ${topicName||subjectName}</h3>
       <p style="margin-bottom:10px;">${hasQuiz?quizDef.intro:'No built-in quiz for this topic yet — explore the resources above or ask your parent to add a custom quiz!'}</p>
@@ -1933,6 +2237,8 @@ function startLesson(subjectName,topicName,isRetake){
       return;
     }
     const q=questions[i];
+    const isImgUrl=s=>s&&(s.startsWith('http')||s.startsWith('data:'))&&/\.(png|jpg|jpeg|gif|webp|svg)/i.test(s);
+    const optionHTML=q.options.map((opt,oi)=>`<button class="quiz-option${isImgUrl(opt)?' img-opt':''}" onclick="answerQ(${i},${oi},${q.correct},'${q.feedback.replace(/'/g,"\\'")}')">${isImgUrl(opt)?`<img src="${opt}" style="max-height:80px;border-radius:8px;display:block;margin:0 auto;" onerror="this.style.display='none'">`:`${opt}`}</button>`).join('');
     area.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:.8rem;font-weight:700;color:var(--text-light);">Question ${i+1} of ${questions.length}</div>
@@ -1941,9 +2247,8 @@ function startLesson(subjectName,topicName,isRetake){
       <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${Math.round(i/questions.length*100)}%"></div></div>
       <div class="quiz-question">
         <div class="quiz-q-text">${q.q}</div>
-        <div class="quiz-options">
-          ${q.options.map((opt,oi)=>`<button class="quiz-option" onclick="answerQ(${i},${oi},${q.correct},'${q.feedback.replace(/'/g,"\\'")}')">${opt}</button>`).join('')}
-        </div>
+        ${q.img?`<div style="text-align:center;margin-bottom:12px;"><img src="${q.img}" style="max-height:180px;border-radius:12px;border:2px solid #e9ecef;" onerror="this.style.display='none'"></div>`:''}
+        <div class="quiz-options${q.options.some(isImgUrl)?' img-options':''}">${optionHTML}</div>
         <div id="qfb" class="quiz-feedback hidden"></div>
       </div>`;
   }
@@ -2235,6 +2540,33 @@ document.addEventListener('click',e=>{
   if(sb&&sb.classList.contains('mobile-open')&&!sb.contains(e.target)&&!e.target.closest('.mobile-nav-toggle'))
     sb.classList.remove('mobile-open');
 });
+// Random fish fact tagline
+(function(){
+  const facts=[
+    '🐠 Clownfish can change gender — females are always the boss!',
+    '🦈 Sharks are older than trees — they\'ve been here 450 million years!',
+    '🐙 Octopuses have three hearts and blue blood!',
+    '🐡 Pufferfish can inflate to be three times their normal size!',
+    '🦑 Giant squids have the largest eyes of any animal on Earth!',
+    '🐟 Some fish can recognize their own reflection in a mirror!',
+    '🐬 Dolphins sleep with one eye open to watch for danger!',
+    '🦀 Crabs can walk in any direction — even sideways and backwards!',
+    '🐠 The mantis shrimp can punch with the force of a bullet!',
+    '🐙 Octopuses are master escape artists and can fit through any hole the size of their beak!',
+    '🦈 Great white sharks can detect a drop of blood from 3 miles away!',
+    '🐬 Dolphins give each other unique names — they use signature whistles!',
+    '🐟 Flying fish can glide up to 45 metres through the air!',
+    '🦞 Lobsters taste with their feet and hear with their legs!',
+    '🐋 Blue whales are the loudest animals on Earth — louder than a jet engine!',
+    '🦑 Cuttlefish can change color and texture in under a second!',
+    '🐠 Seahorses are the only fish where the male carries the babies!',
+    '🦈 Whale sharks are the biggest fish — but they eat tiny plankton!',
+    '🐡 Parrotfish munch on coral and poop out white sand beaches!',
+    '🐙 An octopus has no bones — it can squeeze through a coin-sized hole!',
+  ];
+  const el=document.getElementById('login-tagline');
+  if(el) el.textContent=facts[Math.floor(Math.random()*facts.length)];
+})();
 renderChildAvatarsLogin();
 </script>
 </body>
