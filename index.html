@@ -31,9 +31,8 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 @keyframes starPop{0%{transform:scale(0) rotate(-30deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
 @keyframes bounce{0%,80%,100%{transform:scale(.8);opacity:.5;}40%{transform:scale(1.2);opacity:1;}}
 @keyframes toastIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-@keyframes swimR{from{transform:translateX(-120px);}to{transform:translateX(calc(100vw + 120px));}}
-@keyframes swimL{from{transform:translateX(calc(100vw + 120px));}to{transform:translateX(-120px);}}
-@keyframes swimRflip{from{transform:scaleX(-1) translateX(120px);}to{transform:scaleX(-1) translateX(calc(-100vw - 120px));}}
+@keyframes swimFaceLeft{from{transform:translateX(calc(100vw + 120px));}to{transform:translateX(-120px);}}
+@keyframes swimFaceRight{from{transform:scaleX(-1) translateX(calc(100vw + 120px));}to{transform:scaleX(-1) translateX(-120px);}}
 .fish{position:fixed;pointer-events:none;z-index:0;opacity:.15;animation-timing-function:linear;animation-iteration-count:infinite;}
 .login-card{background:white;border-radius:var(--radius-xl);padding:48px 40px;width:100%;max-width:500px;box-shadow:0 32px 64px rgba(0,0,0,.25);text-align:center;animation:slideUp .5s ease;}
 .login-logo{font-family:'Baloo 2',cursive;font-size:2.5rem;font-weight:800;color:var(--ocean-mid);margin-bottom:4px;}
@@ -369,18 +368,15 @@ input,textarea,select{font-family:'Nunito',sans-serif;outline:none;border:none;}
 </style>
 </head>
 <body>
-<!-- Fish face right naturally (🐟🐠🐡): swimR = L→R as-is; swimL = R→L with scaleX flip to keep facing direction of travel -->
-<!-- 🦈 faces left naturally, so going R→L needs no flip; going L→R needs flip via swimRflip -->
-<!-- 🐙🦑 are symmetric, direction doesn't matter -->
-<div class="fish" style="top:8%;font-size:1.7rem;animation:swimR 22s linear -4s infinite;">🐟</div>
-<div class="fish" style="top:18%;font-size:1rem;animation:swimL 30s linear -11s infinite;">🐠</div>
-<div class="fish" style="top:28%;font-size:2rem;animation:swimL 18s linear -2s infinite;">🦈</div>
-<div class="fish" style="top:40%;font-size:.85rem;animation:swimR 26s linear -18s infinite;">🐡</div>
-<div class="fish" style="top:52%;font-size:1.4rem;animation:swimR 20s linear -7s infinite;">🐙</div>
-<div class="fish" style="top:63%;font-size:1rem;animation:swimL 35s linear -22s infinite;">🐟</div>
-<div class="fish" style="top:74%;font-size:1.6rem;animation:swimR 24s linear -14s infinite;">🦑</div>
-<div class="fish" style="top:83%;font-size:.9rem;animation:swimRflip 28s linear -3s infinite;">🦈</div>
-<div class="fish" style="top:91%;font-size:1.2rem;animation:swimL 19s linear -9s infinite;">🐡</div>
+<div class="fish" style="top:8%;font-size:1.7rem;animation:swimFaceLeft 22s linear -4s infinite;">🐟</div>
+<div class="fish" style="top:18%;font-size:1rem;animation:swimFaceRight 30s linear -11s infinite;">🐠</div>
+<div class="fish" style="top:28%;font-size:2rem;animation:swimFaceLeft 18s linear -2s infinite;">🦈</div>
+<div class="fish" style="top:40%;font-size:.85rem;animation:swimFaceRight 26s linear -18s infinite;">🐡</div>
+<div class="fish" style="top:52%;font-size:1.4rem;animation:swimFaceLeft 20s linear -7s infinite;">🐙</div>
+<div class="fish" style="top:63%;font-size:1rem;animation:swimFaceRight 35s linear -22s infinite;">🐟</div>
+<div class="fish" style="top:74%;font-size:1.6rem;animation:swimFaceLeft 24s linear -14s infinite;">🦑</div>
+<div class="fish" style="top:83%;font-size:.9rem;animation:swimFaceRight 28s linear -3s infinite;">🦈</div>
+<div class="fish" style="top:91%;font-size:1.2rem;animation:swimFaceLeft 19s linear -9s infinite;">🐡</div>
 <div class="toast hidden" id="toast"></div>
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
@@ -1010,20 +1006,64 @@ function qbAddQuestion(){
       <button onclick="this.closest('.qb-question-block').remove()" style="background:none;color:var(--coral);font-size:1rem;font-weight:700;cursor:pointer;border:none;">✕</button>
     </div>
     <input type="text" class="qb-q" placeholder="Question text..." style="border:2px solid #e9ecef;border-radius:8px;padding:8px 10px;font-size:.88rem;width:100%;margin-bottom:8px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;">
-      <input type="text" class="qb-a0" placeholder="Option A" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-      <input type="text" class="qb-a1" placeholder="Option B" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-      <input type="text" class="qb-a2" placeholder="Option C (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-      <input type="text" class="qb-a3" placeholder="Option D (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+      ${[['A','qb-a0','Required'],['B','qb-a1','Required'],['C','qb-a2','Optional'],['D','qb-a3','Optional']].map(([lbl,cls,hint])=>`
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-weight:800;font-size:.82rem;background:var(--ocean-foam);color:var(--ocean-mid);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${lbl}</span>
+        <input type="text" class="${cls}" placeholder="${hint}" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;flex:1;">
+      </div>`).join('')}
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label style="font-weight:700;font-size:.83rem;color:var(--text-mid);">Correct:</label>
       <select class="qb-correct" style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;background:white;">
         <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
       </select>
-      <input type="text" class="qb-feedback" placeholder="Feedback after answer..." style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:140px;">
+      <input type="text" class="qb-feedback" placeholder="Feedback after answer..." style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px;">
     </div>`;
   document.getElementById('qb-questions-list').appendChild(wrap);
+}
+
+function _makeImgInputBlock(labelText,urlClass,fileClass,previewClass,btnLabel){
+  return `<div style="margin-bottom:8px;">
+    <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:4px;">${labelText}</label>
+    <div style="display:flex;gap:6px;margin-bottom:5px;">
+      <input type="text" class="${urlClass}" placeholder="Paste image URL…" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.82rem;flex:1;">
+      <label style="display:flex;align-items:center;gap:4px;padding:7px 10px;border:2px solid var(--ocean-light);border-radius:8px;background:var(--ocean-foam);cursor:pointer;font-size:.78rem;font-weight:700;color:var(--ocean-mid);white-space:nowrap;">
+        📁 Upload<input type="file" class="${fileClass}" accept="image/*" style="display:none;">
+      </label>
+    </div>
+    <div class="${previewClass}" style="display:none;margin-bottom:4px;"><img style="max-height:100px;border-radius:8px;border:2px solid #e9ecef;display:block;"></div>
+    <div style="font-size:.72rem;color:var(--text-light);">${btnLabel}</div>
+  </div>`;
+}
+
+function _attachImgInputHandlers(block){
+  // For each pair of url input + file input in this block, wire up live preview
+  block.querySelectorAll('input[type="file"]').forEach(fileInp=>{
+    const container=fileInp.closest('div.'+fileInp.className.split(' ')[0])||fileInp.closest('[style]');
+    // find the sibling url input and preview within the same parent group
+    const group=fileInp.closest('div[style*="margin-bottom"]');
+    if(!group) return;
+    const urlInp=group.querySelector('input[type="text"]');
+    const preview=group.querySelector('[class*="preview"]')||group.nextElementSibling;
+    fileInp.addEventListener('change',function(){
+      const file=this.files[0];if(!file) return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        if(urlInp) urlInp.value=e.target.result;
+        // show preview
+        const previewEl=group.querySelector('[style*="display:none"],.[style*="display:block"]')||group.parentElement.querySelector('[class*="preview"]');
+        if(previewEl){const img=previewEl.querySelector('img');if(img){img.src=e.target.result;previewEl.style.display='block';}}
+      };
+      reader.readAsDataURL(file);
+    });
+    if(urlInp){
+      urlInp.addEventListener('input',function(){
+        const previewEl=group.querySelector('[class*="preview"]');
+        if(previewEl&&this.value){const img=previewEl.querySelector('img');if(img){img.src=this.value;img.onload=()=>{previewEl.style.display='block';};img.onerror=()=>{previewEl.style.display='none';};}}
+      });
+    }
+  });
 }
 
 function qbAddImageQuestion(){
@@ -1037,23 +1077,21 @@ function qbAddImageQuestion(){
       <div style="font-weight:800;font-size:.88rem;color:var(--ocean-mid);">🖼 Image Question ${_qbCount}</div>
       <button onclick="this.closest('.qb-question-block').remove()" style="background:none;color:var(--coral);font-size:1rem;font-weight:700;cursor:pointer;border:none;">✕</button>
     </div>
-    <input type="text" class="qb-q" placeholder="Question text (e.g. 'What animal is shown?')" style="border:2px solid #e9ecef;border-radius:8px;padding:8px 10px;font-size:.88rem;width:100%;margin-bottom:8px;">
+    <input type="text" class="qb-q" placeholder="Question text (e.g. What animal is shown?)" style="border:2px solid #e9ecef;border-radius:8px;padding:8px 10px;font-size:.88rem;width:100%;margin-bottom:8px;">
+    ${_makeImgInputBlock('Question Image (optional)','qb-img-url','qb-img-file','qb-img-preview','URL or upload — shown above the answer choices')}
     <div style="margin-bottom:8px;">
-      <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:4px;">Question Image (optional)</label>
-      <input type="url" class="qb-img-url" placeholder="Paste image URL (e.g. https://upload.wikimedia.org/...)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;width:100%;margin-bottom:5px;">
-      <div class="qb-img-preview" style="display:none;margin-top:5px;"><img style="max-height:120px;border-radius:8px;border:2px solid #e9ecef;"></div>
-      <button onclick="qbPreviewImg(this)" style="font-size:.78rem;font-weight:700;color:var(--ocean-mid);background:none;border:none;cursor:pointer;padding:0;">Preview image ↗</button>
-    </div>
-    <div style="margin-bottom:8px;">
-      <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:4px;">Answer Options <span style="font-weight:500;">(text or image URLs)</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
-        <input type="text" class="qb-a0" placeholder="A: text or image URL" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-        <input type="text" class="qb-a1" placeholder="B: text or image URL" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-        <input type="text" class="qb-a2" placeholder="C: text or image URL (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
-        <input type="text" class="qb-a3" placeholder="D: text or image URL (optional)" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.85rem;">
+      <label style="font-weight:700;font-size:.82rem;color:var(--text-mid);display:block;margin-bottom:6px;">Answer Options <span style="font-weight:500;color:var(--text-light);">(text, URL, or upload an image)</span></label>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        ${[0,1,2,3].map(i=>`<div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-weight:800;font-size:.8rem;color:var(--ocean-mid);min-width:18px;">${'ABCD'[i]}</span>
+          <input type="text" class="qb-a${i}" placeholder="${i<2?'Required':'Optional'} — text or image URL/upload" style="border:2px solid #e9ecef;border-radius:8px;padding:7px 10px;font-size:.84rem;flex:1;">
+          <label style="cursor:pointer;padding:6px 8px;border:2px solid var(--ocean-light);border-radius:8px;background:var(--ocean-foam);font-size:.72rem;font-weight:700;color:var(--ocean-mid);white-space:nowrap;" title="Upload image for option ${'ABCD'[i]}">
+            📁<input type="file" class="qb-afile${i}" accept="image/*" style="display:none;">
+          </label>
+        </div>`).join('')}
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;">
       <label style="font-weight:700;font-size:.83rem;color:var(--text-mid);">Correct:</label>
       <select class="qb-correct" style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;background:white;">
         <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
@@ -1061,6 +1099,28 @@ function qbAddImageQuestion(){
       <input type="text" class="qb-feedback" placeholder="Feedback after answer..." style="border:2px solid #e9ecef;border-radius:8px;padding:6px 10px;font-size:.85rem;flex:1;min-width:120px;">
     </div>`;
   document.getElementById('qb-questions-list').appendChild(wrap);
+  // Wire file inputs for question image
+  const qImgFile=wrap.querySelector('.qb-img-file');
+  const qImgUrl=wrap.querySelector('.qb-img-url');
+  const qPreview=wrap.querySelector('.qb-img-preview');
+  if(qImgFile&&qImgUrl&&qPreview){
+    qImgFile.addEventListener('change',function(){
+      const f=this.files[0];if(!f) return;
+      const r=new FileReader();r.onload=e=>{qImgUrl.value=e.target.result;const img=qPreview.querySelector('img');if(img){img.src=e.target.result;qPreview.style.display='block';}};r.readAsDataURL(f);
+    });
+    qImgUrl.addEventListener('input',function(){if(this.value){const img=qPreview.querySelector('img');if(img){img.src=this.value;img.onload=()=>{qPreview.style.display='block';};img.onerror=()=>{qPreview.style.display='none';}}}});
+  }
+  // Wire file inputs for each answer option
+  [0,1,2,3].forEach(i=>{
+    const fileInp=wrap.querySelector(`.qb-afile${i}`);
+    const urlInp=wrap.querySelector(`.qb-a${i}`);
+    if(fileInp&&urlInp){
+      fileInp.addEventListener('change',function(){
+        const f=this.files[0];if(!f) return;
+        const r=new FileReader();r.onload=e=>{urlInp.value=e.target.result;};r.readAsDataURL(f);
+      });
+    }
+  });
 }
 
 function qbPreviewImg(btn){
@@ -1095,10 +1155,10 @@ function qbSaveQuiz(){
     const correctIdx=parseInt(el.querySelector('.qb-correct')?.value||'0');
     const f=(el.querySelector('.qb-feedback')?.value||'').trim()||'Good try!';
     if(!q){showToast('Fill in all question texts!','error');return;}
-    const filled=rawOpts.map((o,i)=>({o,i})).filter(x=>x.o);
+    const filled=rawOpts.map((o,i)=>({o,i,isImg:_looksLikeImg(o)})).filter(x=>x.o);
     if(filled.length<2){showToast('Each question needs at least 2 options!','error');return;}
     const newCorrect=filled.findIndex(x=>x.i===correctIdx);
-    const qObj={q,a:filled.map(x=>x.o),c:newCorrect<0?0:newCorrect,f};
+    const qObj={q,a:filled.map(x=>x.o),c:newCorrect<0?0:newCorrect,f,imgAnswers:filled.some(x=>x.isImg)};
     if(imgUrl) qObj.img=imgUrl;
     questions.push(qObj);
   }
@@ -1153,11 +1213,11 @@ addLC('Multiplication Facts','Multiplication is a fast way to add the same numbe
 
 addLC('Fractions','A fraction shows a part of a whole thing. If you cut a pizza into 4 equal slices and eat 1 slice, you ate 1/4 (one quarter) of the pizza. The bottom number (denominator) tells us how many equal parts the whole is divided into. The top number (numerator) tells us how many parts we have.',['Fractions show parts of a whole','The denominator (bottom) = total equal parts','The numerator (top) = parts you have','1/2 is bigger than 1/4','Equal parts must all be the same size'],[{label:'Khan Academy: Fractions',url:'https://www.khanacademy.org/math/cc-third-grade-math/cc-3rd-fractions-topic'},{label:'Math is Fun: Fractions',url:'https://www.mathsisfun.com/fractions.html'}]);
 
-addLC('Animals & Habitats','Every animal lives in a habitat — a place that gives it food, water, shelter, and the right climate. Polar bears live in the Arctic because their thick fur keeps them warm. Fish live in water and breathe through gills. Each animal is specially adapted to survive in its home.',['A habitat provides food, water, and shelter','Animals have special body features for their habitat','Mammals have fur/hair and nurse young with milk','Fish breathe through gills','Reptiles are cold-blooded and have scales'],[{label:'Khan Academy: Living Things',url:'https://www.khanacademy.org/science/biology/ecology'},{label:'National Geographic Kids: Animals',url:'https://kids.nationalgeographic.com/animals'}]);
+addLC('Animals & Habitats','Every animal lives in a habitat — a place that gives it food, water, shelter, and the right climate. Polar bears live in the Arctic because their thick fur keeps them warm. Fish live in water and breathe through gills. Each animal is specially adapted to survive in its home.',['A habitat provides food, water, and shelter','Animals have special body features for their habitat','Mammals have fur/hair and nurse young with milk','Fish breathe through gills','Reptiles are cold-blooded and have scales'],[{label:'Khan Academy: Living Things',url:'https://www.khanacademy.org/science/biology/ecology'},{label:'Wikipedia: Animal',url:'https://en.wikipedia.org/wiki/Animal'}]);
 
 addLC('Solar System & Space','Our solar system has 8 planets all orbiting the Sun. Mercury is closest and Venus is the hottest. Earth is third from the Sun — the only planet with life! Jupiter is the largest planet, and Saturn has beautiful rings made of ice and rock.',['The Sun is a star at the center of our solar system','8 planets orbit the Sun','Mercury is closest to the Sun','Jupiter is the largest planet','Earth takes 365 days to orbit the Sun (1 year)'],[{label:'NASA Solar System Exploration',url:'https://solarsystem.nasa.gov/planets/overview/'},{label:'Khan Academy: Earth & Space',url:'https://www.khanacademy.org/science/astronomy'}]);
 
-addLC('Mammals & Their Traits','Mammals are a special group of animals. All mammals: are warm-blooded (they control their own body temperature), have hair or fur, breathe air with lungs, and feed their babies milk. Humans, dogs, dolphins, and even bats are all mammals!',['All mammals are warm-blooded','Mammals have hair or fur','Mothers nurse babies with milk','Mammals breathe air with lungs','Bats are the only flying mammals','Whales and dolphins are ocean mammals'],[{label:'BBC Bitesize: Mammals',url:'https://www.bbc.co.uk/bitesize/topics/zyf6f4j'},{label:'National Geographic: Mammals',url:'https://kids.nationalgeographic.com/animals/mammals'}]);
+addLC('Mammals & Their Traits','Mammals are a special group of animals. All mammals: are warm-blooded (they control their own body temperature), have hair or fur, breathe air with lungs, and feed their babies milk. Humans, dogs, dolphins, and even bats are all mammals!',['All mammals are warm-blooded','Mammals have hair or fur','Mothers nurse babies with milk','Mammals breathe air with lungs','Bats are the only flying mammals','Whales and dolphins are ocean mammals'],[{label:'BBC Bitesize: Mammals',url:'https://www.bbc.co.uk/bitesize/topics/zyf6f4j'},{label:'Wikipedia: Mammal',url:'https://en.wikipedia.org/wiki/Mammal'}]);
 
 addLC('Plant Life Cycles','Plants grow from tiny seeds. Add water and warmth and the seed germinates (sprouts) into a seedling. The seedling grows roots that anchor it and absorb water, and leaves that capture sunlight. Mature plants flower to attract pollinators, then produce seeds to start the cycle again!',['Seeds need water, warmth, and air to germinate','Roots absorb water and anchor the plant','Leaves capture sunlight for photosynthesis','Flowers attract pollinators like bees','Fruits protect seeds and help them spread'],[{label:'CK-12: Plant Life Cycles',url:'https://flexbooks.ck12.org/cbook/ck-12-biology-flexbook-2.0/section/9.1/'},{label:'BBC Bitesize: Plants',url:'https://www.bbc.co.uk/bitesize/topics/zy66fg8'}]);
 
@@ -1165,13 +1225,13 @@ addLC('States of Matter','Everything around us is made of matter, and matter com
 
 addLC('Food Chains & Food Webs','Energy flows through ecosystems in food chains. Plants (producers) make food from sunlight. Herbivores (plant-eaters) eat plants. Carnivores eat herbivores. At the end, decomposers like fungi and bacteria break down dead matter and return nutrients to the soil. A food web shows how many food chains connect.',['Producers (plants) make food via photosynthesis','Primary consumers eat plants (herbivores)','Secondary consumers eat primary consumers','Decomposers recycle nutrients back to soil','Energy is lost at each level (~90%)'],[{label:'Khan Academy: Ecology',url:'https://www.khanacademy.org/science/ap-biology/ecology-ap'},{label:'BBC Bitesize: Food Chains',url:'https://www.bbc.co.uk/bitesize/topics/zbcw2hv'}]);
 
-addLC('American Revolution','The 13 American colonies declared independence from Britain in 1776. Colonists were angry about unfair taxes ("No taxation without representation!"). George Washington led the Continental Army. The Declaration of Independence, written by Thomas Jefferson, stated that all people have the right to "life, liberty, and the pursuit of happiness." The Treaty of Paris (1783) ended the war.',['The war lasted 1775–1783','"No taxation without representation" was a key slogan','Thomas Jefferson wrote the Declaration of Independence','George Washington commanded the Continental Army','The Battle of Saratoga was a turning point','The Treaty of Paris officially ended the war'],[{label:'Khan Academy: American Revolution',url:'https://www.khanacademy.org/humanities/us-history/colonial-america/american-revolution'},{label:'History.com: American Revolution',url:'https://www.history.com/topics/american-revolution'}]);
+addLC('American Revolution','The 13 American colonies declared independence from Britain in 1776. Colonists were angry about unfair taxes ("No taxation without representation!"). George Washington led the Continental Army. The Declaration of Independence, written by Thomas Jefferson, stated that all people have the right to "life, liberty, and the pursuit of happiness." The Treaty of Paris (1783) ended the war.',['The war lasted 1775–1783','"No taxation without representation" was a key slogan','Thomas Jefferson wrote the Declaration of Independence','George Washington commanded the Continental Army','The Battle of Saratoga was a turning point','The Treaty of Paris officially ended the war'],[{label:'Khan Academy: American Revolution',url:'https://www.khanacademy.org/humanities/us-history/colonial-america/american-revolution'},{label:'Library of Congress: Revolution',url:'https://www.loc.gov/topics/content.php?subcat=8'}]);
 
 addLC('Community Helpers','Community helpers are the people who keep our neighborhoods safe, healthy, and running smoothly every day. Firefighters put out fires and save lives. Doctors and nurses care for sick people. Police officers enforce laws and help in emergencies. Teachers educate children. Mail carriers deliver letters and packages. Everyone in a community plays an important role!',['Firefighters protect people and property from fires','Doctors and nurses provide medical care','Police officers keep communities safe','Teachers help children learn and grow','Mail carriers and delivery drivers keep goods moving','Construction workers build and fix our infrastructure'],[{label:'Khan Academy: Community',url:'https://www.khanacademy.org/humanities/hass-social-studies-beginners/x5e6bd3a6b23e76f9:the-world-around-you'}]);
 
 addLC('Ancient Egypt','Ancient Egypt was one of the world\'s first great civilizations, lasting over 3,000 years along the Nile River. Pharaohs ruled as god-kings. Huge pyramids were built as royal tombs. Egyptians invented hieroglyphics (picture-writing), made paper from papyrus reeds, and developed a 365-day calendar.',['The Nile River flooded yearly, depositing rich soil for farming','Pharaohs were divine rulers — both kings and gods','The Great Pyramid of Giza is one of the Seven Wonders','Hieroglyphics was a writing system of pictures and symbols','The Rosetta Stone helped modern scholars decode hieroglyphics'],[{label:'Khan Academy: Ancient Egypt',url:'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/ancient-egypt-hittites/a/ancient-egypt'},{label:'British Museum: Ancient Egypt',url:'https://www.britishmuseum.org/collection/egypt'}]);
 
-addLC('Ancient Greece','Ancient Greece (circa 800–146 BCE) gave the world democracy, the Olympic Games, philosophy, and foundational ideas in math and science. The two most powerful city-states were Athens (known for democracy and culture) and Sparta (known for military strength). Thinkers like Socrates, Plato, and Aristotle shaped Western philosophy.',['Greece was made up of independent city-states called poleis','Athens developed early democracy — citizens voted on laws','Sparta was a powerful military city-state','The Olympics began in Olympia in 776 BCE','Greek philosophers asked big questions about life and knowledge','Alexander the Great spread Greek culture across a vast empire'],[{label:'Khan Academy: Ancient Greece',url:'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/classical-greek-culture'},{label:'National Geographic: Ancient Greece',url:'https://www.nationalgeographic.com/culture/article/ancient-greece'}]);
+addLC('Ancient Greece','Ancient Greece (circa 800–146 BCE) gave the world democracy, the Olympic Games, philosophy, and foundational ideas in math and science. The two most powerful city-states were Athens (known for democracy and culture) and Sparta (known for military strength). Thinkers like Socrates, Plato, and Aristotle shaped Western philosophy.',['Greece was made up of independent city-states called poleis','Athens developed early democracy — citizens voted on laws','Sparta was a powerful military city-state','The Olympics began in Olympia in 776 BCE','Greek philosophers asked big questions about life and knowledge','Alexander the Great spread Greek culture across a vast empire'],[{label:'Khan Academy: Ancient Greece',url:'https://www.khanacademy.org/humanities/world-history/world-history-beginnings/classical-greek-culture'},{label:'Wikipedia: Ancient Greece',url:'https://en.wikipedia.org/wiki/Ancient_Greece'}]);
 
 addLC('Civil Rights Movement','The Civil Rights Movement (1950s–1960s) was a struggle by African Americans to end racial segregation and discrimination in the United States. Leaders like Dr. Martin Luther King Jr. used nonviolent protest — marches, sit-ins, and speeches. The movement led to landmark laws including the Civil Rights Act (1964) and the Voting Rights Act (1965).',['Jim Crow laws enforced racial segregation in the South','Rosa Parks refused to give up her bus seat in 1955','Dr. King gave his "I Have a Dream" speech in 1963','The March on Washington gathered 250,000 people','The Civil Rights Act of 1964 banned discrimination','The Voting Rights Act of 1965 protected voting rights'],[{label:'Khan Academy: Civil Rights',url:'https://www.khanacademy.org/humanities/us-history/postwarera/civil-rights-movement'},{label:'National Archives: Civil Rights',url:'https://www.archives.gov/research/civil-rights'}]);
 
@@ -1187,9 +1247,9 @@ addLC('Physical Science – Newton\'s Laws','Isaac Newton\'s three laws of motio
 
 addLC('Genetics & Heredity','Genes are segments of DNA that carry the instructions for making you. You inherit two copies of each gene — one from each parent. Some genes are dominant (one copy is enough to show the trait) and some are recessive (you need two copies). Eye color, hair color, and height are all influenced by genes.',['DNA is the molecule that carries genetic information','Genes are sections of DNA that code for traits','You inherit one gene copy from each parent','Dominant alleles show with just one copy','Recessive alleles only show when you have two copies','Mutations are changes in DNA — can be harmful or neutral'],[{label:'Khan Academy: Genetics',url:'https://www.khanacademy.org/science/ap-biology/heredity'},{label:'Genetics Home Reference',url:'https://medlineplus.gov/genetics/'}]);
 
-addLC('Evolution & Natural Selection','Charles Darwin discovered that species change over time through natural selection. Individuals with traits better suited to their environment survive longer and reproduce more. Over many generations, useful traits become more common. This process has produced the incredible diversity of life on Earth.',['Natural selection = "survival of the fittest" (most reproductive success)','Variations in traits exist naturally within populations','Favorable traits are passed to offspring','Over many generations, species gradually change','Fossil evidence shows how species changed over time','Darwin studied finches in the Galápagos Islands'],[{label:'Khan Academy: Evolution',url:'https://www.khanacademy.org/science/ap-biology/natural-selection'},{label:'National Geographic: Evolution',url:'https://www.nationalgeographic.com/science/article/evolution'}]);
+addLC('Evolution & Natural Selection','Charles Darwin discovered that species change over time through natural selection. Individuals with traits better suited to their environment survive longer and reproduce more. Over many generations, useful traits become more common. This process has produced the incredible diversity of life on Earth.',['Natural selection = "survival of the fittest" (most reproductive success)','Variations in traits exist naturally within populations','Favorable traits are passed to offspring','Over many generations, species gradually change','Fossil evidence shows how species changed over time','Darwin studied finches in the Galápagos Islands'],[{label:'Khan Academy: Evolution',url:'https://www.khanacademy.org/science/ap-biology/natural-selection'},{label:'Wikipedia: Natural Selection',url:'https://en.wikipedia.org/wiki/Natural_selection'}]);
 
-addLC('Colors & Color Mixing','The three primary colors are red, yellow, and blue. You cannot make these by mixing other colors. Mix two primaries to get secondary colors: red + yellow = orange, blue + yellow = green, red + blue = purple. Colors opposite each other on the color wheel are complementary and create strong contrast when used together.',['Primary colors: red, yellow, blue','Secondary colors: orange, green, purple','Mix two primaries to get a secondary','Complementary colors are opposite on the wheel','Warm colors: red, orange, yellow','Cool colors: blue, green, purple','Adding white makes a tint; adding black makes a shade'],[{label:'Color Matters',url:'https://www.colormatters.com/color-and-design/basic-color-theory'},{label:'Kahn Academy: Art',url:'https://www.khanacademy.org/humanities/art-history'}]);
+addLC('Colors & Color Mixing','The three primary colors are red, yellow, and blue. You cannot make these by mixing other colors. Mix two primaries to get secondary colors: red + yellow = orange, blue + yellow = green, red + blue = purple. Colors opposite each other on the color wheel are complementary and create strong contrast when used together.',['Primary colors: red, yellow, blue','Secondary colors: orange, green, purple','Mix two primaries to get a secondary','Complementary colors are opposite on the wheel','Warm colors: red, orange, yellow','Cool colors: blue, green, purple','Adding white makes a tint; adding black makes a shade'],[{label:'Khan Academy: Color',url:'https://www.khanacademy.org/humanities/art-history/art-history-500bce-to-1300'},{label:'Kahn Academy: Art',url:'https://www.khanacademy.org/humanities/art-history'}]);
 
 addLC('Rhythm & Beat','Music has a steady pulse called the beat — like a heartbeat. Rhythm is the pattern of sounds placed over that beat. Some sounds are long, some are short, some are strong, some are soft. A quarter note gets one beat, a half note gets two, and a whole note gets four beats in common time (4/4).',['The beat is the steady, repeating pulse in music','Rhythm is the pattern of long and short sounds','Tempo = how fast or slow the beat is','Forte (f) means loud; piano (p) means soft','A quarter note = 1 beat; half note = 2 beats; whole note = 4 beats','Time signature 4/4 means 4 beats per measure'],[{label:'musictheory.net: Basics',url:'https://www.musictheory.net/lessons'},{label:'Khan Academy: Music',url:'https://www.khanacademy.org/humanities/music'}]);
 
@@ -1213,6 +1273,15 @@ function getQuizForTopic(topicName){
   return null;
 }
 
+function _looksLikeImg(s){
+  if(!s) return false;
+  if(s.startsWith('data:image/')) return true;
+  if(/\.(png|jpg|jpeg|gif|webp|svg|bmp|avif)(\?.*)?$/i.test(s)) return true;
+  // Common image hosting patterns
+  if(/\/(image|img|photo|picture|media|file)\//i.test(s)&&s.startsWith('http')) return true;
+  return false;
+}
+
 function shuffleQuestions(questions,n){
   const pool=[...questions];
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
@@ -1220,7 +1289,7 @@ function shuffleQuestions(questions,n){
   return selected.map(q=>{
     const opts=q.a.map((text,i)=>({text,isCorrect:i===q.c}));
     for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
-    return{q:q.q,img:q.img||null,options:opts.map(o=>o.text),correct:opts.findIndex(o=>o.isCorrect),feedback:q.f};
+    return{q:q.q,img:q.img||null,imgAnswers:!!(q.imgAnswers||opts.some(o=>_looksLikeImg(o.text))),options:opts.map(o=>o.text),correct:opts.findIndex(o=>o.isCorrect),feedback:q.f};
   });
 }
 
@@ -1297,7 +1366,7 @@ const curriculumLibrary=[
    STATE
 ════════════════════════════════════════════════════ */
 const state={
-  currentScreen:'login',currentChild:null,parentEmoji:'👩‍💼',
+  currentScreen:'login',currentChild:null,parentEmoji:localStorage.getItem('oa_parent_emoji')||'👩‍💼',
   currentSubjectName:null,_subjectMap:{},
   /* readingSources: { "childId__SubjectName – TopicName": [{type,title,note}] } */
   readingSources:{},
@@ -1467,7 +1536,7 @@ function openAddChildModal(){
         <select id="nc-grade" style="border:2px solid #e9ecef;border-radius:8px;padding:11px;font-size:.93rem;width:100%;background:white;">${GRADES.map(g=>`<option>${g}</option>`).join('')}</select></div>
     </div>
     <div><label style="font-weight:700;font-size:.86rem;color:var(--text-mid);display:block;margin-bottom:5px;">Avatar</label>
-      <div class="emoji-grid" id="nc-egrid">${CHILD_EMOJIS.map((e,i)=>`<button class="emoji-btn${i===0?' selected':''}" onclick="pickEmoji('nc-egrid','nc-emoji','${e}',this)">${e}</button>`).join('')}</div>
+      <div class="emoji-grid" id="nc-egrid">${CHILD_EMOJIS.map((e,i)=>`<button class="emoji-btn${i===0?' selected':''}" data-emoji="${e}">${e}</button>`).join('')}</div>
       <input type="hidden" id="nc-emoji" value="${CHILD_EMOJIS[0]}"></div>
   `,'Add Child','btn-primary',()=>{
     const name=document.getElementById('nc-name').value.trim();
@@ -1480,6 +1549,7 @@ function openAddChildModal(){
       progress:{Math:0,Reading:0,Science:0},curriculum:{Monday:[],Tuesday:[],Wednesday:[],Thursday:[],Friday:[]}});
     closeModal();renderChildrenPanel();renderDashboard();renderChildAvatarsLogin();showToast(`${name} added! 🎉`,'success');
   });
+  setTimeout(()=>setupEmojiGrid('nc-egrid','nc-emoji'),50);
 }
 
 /* ════════════════════════════════════════════════════
@@ -1489,23 +1559,41 @@ function pickEmoji(gridId,inputId,emoji,btn){
   document.querySelectorAll(`#${gridId} .emoji-btn`).forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');document.getElementById(inputId).value=emoji;
 }
+function setupEmojiGrid(gridId,inputId){
+  // Use event delegation to safely handle ZWJ emojis that break inline onclick
+  const grid=document.getElementById(gridId);
+  if(!grid) return;
+  grid.addEventListener('click',function(e){
+    const btn=e.target.closest('.emoji-btn');
+    if(!btn) return;
+    const emoji=btn.dataset.emoji;
+    if(!emoji) return;
+    grid.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const inp=document.getElementById(inputId);
+    if(inp) inp.value=emoji;
+  });
+}
 function openChangeChildEmoji(id){
   const child=state.children.find(c=>c.id===id);if(!child) return;
   openModal(`Change ${child.name}'s Avatar`,'Choose a new icon.',
-    `<div class="emoji-grid" id="ce-grid">${CHILD_EMOJIS.map(e=>`<button class="emoji-btn${e===child.emoji?' selected':''}" onclick="pickEmoji('ce-grid','ce-val','${e}',this)">${e}</button>`).join('')}</div><input type="hidden" id="ce-val" value="${child.emoji}">`,
+    `<div class="emoji-grid" id="ce-grid">${CHILD_EMOJIS.map(e=>`<button class="emoji-btn${e===child.emoji?' selected':''}" data-emoji="${e}">${e}</button>`).join('')}</div><input type="hidden" id="ce-val" value="${child.emoji}">`,
     'Save','btn-primary',()=>{child.emoji=document.getElementById('ce-val').value;closeModal();renderChildrenPanel();renderChildAvatarsLogin();renderDashboard();showToast('Avatar updated! ✅','success');});
+  setTimeout(()=>setupEmojiGrid('ce-grid','ce-val'),50);
 }
 function openChangeParentAvatar(){
   openModal('Change Parent Avatar','Choose a new icon.',
-    `<div class="emoji-grid" id="pe-grid">${PARENT_EMOJIS.map(e=>`<button class="emoji-btn${e===state.parentEmoji?' selected':''}" onclick="pickEmoji('pe-grid','pe-val','${e}',this)">${e}</button>`).join('')}</div><input type="hidden" id="pe-val" value="${state.parentEmoji}">`,
+    `<div class="emoji-grid" id="pe-grid">${PARENT_EMOJIS.map(e=>`<button class="emoji-btn${e===state.parentEmoji?' selected':''}" data-emoji="${e}">${e}</button>`).join('')}</div><input type="hidden" id="pe-val" value="${state.parentEmoji}">`,
     'Save','btn-primary',()=>{
       const newEmoji=document.getElementById('pe-val').value||state.parentEmoji;
       state.parentEmoji=newEmoji;
+      localStorage.setItem('oa_parent_emoji',newEmoji);
       const navEl=document.getElementById('parent-nav-avatar');
       if(navEl) navEl.textContent=newEmoji;
       closeModal();
       showToast('Avatar updated! ✅','success');
     });
+  setTimeout(()=>setupEmojiGrid('pe-grid','pe-val'),50);
 }
 
 /* ════════════════════════════════════════════════════
@@ -2142,10 +2230,11 @@ function showTopicStart(subjectName,topicName){
         </ul>
       </div>
       ${lesson.learnMore.length?`<div style="border-top:2px solid #e9ecef;padding-top:11px;">
-        <div style="font-weight:800;font-size:.82rem;color:var(--text-mid);margin-bottom:7px;">📚 Learn More (opens new tab)</div>
+        <div style="font-weight:800;font-size:.82rem;color:var(--text-mid);margin-bottom:7px;">📚 Free Learning Resources</div>
         <div style="display:flex;flex-wrap:wrap;gap:7px;">
-          ${lesson.learnMore.map(l=>`<a href="${l.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background:#e3f2fd;color:var(--ocean-mid);padding:4px 11px;border-radius:50px;font-size:.78rem;font-weight:800;text-decoration:none;">🔗 ${l.label}</a>`).join('')}
+          ${lesson.learnMore.map(l=>`<a href="${l.url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:4px;background:#e3f2fd;color:var(--ocean-mid);padding:4px 11px;border-radius:50px;font-size:.78rem;font-weight:800;text-decoration:none;">🔗 ${l.label}</a>`).join('')}
         </div>
+        <div style="font-size:.7rem;color:var(--text-light);margin-top:7px;">Links open free educational websites. Ocean Academy is not affiliated with these sites.</div>
       </div>`:''}
     </div>`:'';
   area.innerHTML=`
@@ -2237,8 +2326,10 @@ function startLesson(subjectName,topicName,isRetake){
       return;
     }
     const q=questions[i];
-    const isImgUrl=s=>s&&(s.startsWith('http')||s.startsWith('data:'))&&/\.(png|jpg|jpeg|gif|webp|svg)/i.test(s);
-    const optionHTML=q.options.map((opt,oi)=>`<button class="quiz-option${isImgUrl(opt)?' img-opt':''}" onclick="answerQ(${i},${oi},${q.correct},'${q.feedback.replace(/'/g,"\\'")}')">${isImgUrl(opt)?`<img src="${opt}" style="max-height:80px;border-radius:8px;display:block;margin:0 auto;" onerror="this.style.display='none'">`:`${opt}`}</button>`).join('');
+    const optionHTML=q.options.map((opt,oi)=>{
+      const isImg=_looksLikeImg(opt);
+      return `<button class="quiz-option${isImg?' img-opt':''}" onclick="answerQ(${i},${oi},${q.correct},'${q.feedback.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${isImg?`<img src="${opt}" alt="Option ${'ABCD'[oi]}" style="max-height:90px;max-width:100%;border-radius:8px;display:block;margin:0 auto;" onerror="this.parentElement.textContent='[Image]'">`:opt}</button>`;
+    }).join('');
     area.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:.8rem;font-weight:700;color:var(--text-light);">Question ${i+1} of ${questions.length}</div>
@@ -2247,8 +2338,8 @@ function startLesson(subjectName,topicName,isRetake){
       <div class="quiz-progress-bar"><div class="quiz-progress-fill" style="width:${Math.round(i/questions.length*100)}%"></div></div>
       <div class="quiz-question">
         <div class="quiz-q-text">${q.q}</div>
-        ${q.img?`<div style="text-align:center;margin-bottom:12px;"><img src="${q.img}" style="max-height:180px;border-radius:12px;border:2px solid #e9ecef;" onerror="this.style.display='none'"></div>`:''}
-        <div class="quiz-options${q.options.some(isImgUrl)?' img-options':''}">${optionHTML}</div>
+        ${q.img?`<div style="text-align:center;margin-bottom:14px;"><img src="${q.img}" alt="Question image" style="max-height:200px;max-width:100%;border-radius:12px;border:2px solid #e9ecef;" onerror="this.style.display='none'"></div>`:''}
+        <div class="quiz-options${(q.imgAnswers||q.options.some(_looksLikeImg))?' img-options':''}">${optionHTML}</div>
         <div id="qfb" class="quiz-feedback hidden"></div>
       </div>`;
   }
